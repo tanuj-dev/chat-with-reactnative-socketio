@@ -5,12 +5,13 @@ import Login from '@screens/Login';
 import Home from '@screens/Home';
 import {NavigationContainer, StackActions} from '@react-navigation/native';
 const Stack = createStackNavigator();
-export default function Navigator() {
+export default function Navigator(props) {
+  const {auth} = props;
   return (
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{headerShown: false}}
-        initialRouteName="Login">
+        initialRouteName={auth ? 'Home' : 'Login'}>
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="Login" component={Login} />
       </Stack.Navigator>

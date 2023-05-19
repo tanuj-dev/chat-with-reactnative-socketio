@@ -30,3 +30,30 @@ export const userData = (state = userInitialData, action) => {
       return state;
   }
 };
+
+const login = {
+  Loading: false,
+  data: [],
+  message: '',
+};
+export const retrieveUserSession = (state = login, action) => {
+  switch (action.type) {
+    case 'logindata':
+      return {
+        loading: true,
+        data: [],
+      };
+    case 'logindatasuc':
+      return {
+        loading: false,
+        data: action.payload,
+      };
+    // case GET_USER_DATA_ERROE:
+    //   return {
+    //     loading: false,
+    //     error: action.payload,
+    //   };
+    default:
+      return state;
+  }
+};

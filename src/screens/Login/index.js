@@ -5,24 +5,96 @@ import {
   ImageBackground,
   TextInput,
   Image,
+  SafeAreaView,
+  Alert,
 } from 'react-native';
 import React, {useEffect, useState, useCallback} from 'react';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import EncryptedStorage from 'react-native-encrypted-storage';
+
 import {io} from 'socket.io-client';
 import {GiftedChat} from 'react-native-gifted-chat';
 export default function Login({navigation}) {
+  const [data, setData] = useState({});
+  // const [jdata,setJdata]
+  const [passwordError, checkPassword] = useState('');
+  const [checkUserName, setCheckUserName] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [signup, setSignup] = useState(false);
   const [messages, setMessages] = useState([]);
   const onSend = useCallback((messages = []) => {
     setMessages(previousMessages =>
       GiftedChat.append(previousMessages, messages),
     );
   }, []);
+  const isUserNameValid = () => {
+    console.log(checkUserName, 'usename');
+    let isValid = true;
+    if (username) {
+      if (username.length < 5) {
+        setCheckUserName('Empty Mail');
+        isValid = false;
+        return;
+      } else {
+        setCheckUserName('valid Mail');
+        isValid = true;
+      }
+    } else {
+      // setCheckUserName('');
+      isValid = false;
+    }
+    return isValid;
+  };
+  const isPasswordValid = () => {
+    let isValid = true;
+
+    if (password.length < 8) {
+      if (password.length === 0) {
+        checkPassword('Empty password');
+        isValid = false;
+      } else {
+        checkPassword('short password');
+        isValid = false;
+      }
+    } else {
+      checkPassword('');
+      isValid = true;
+    }
+    return isValid;
+  };
+
+  const storeUserSessionasync = async data => {
+    try {
+      await EncryptedStorage.setItem('user_session', JSON.stringify(data));
+      navigation.replace('Home');
+      // Congrats! You've just stored your first value!
+    } catch (error) {
+      // There was an error on the native side
+    }
+  };
+  const retrieveUserSession = async () => {
+    try {
+      const session = await EncryptedStorage.getItem('user_session');
+
+      if (session !== undefined) {
+        const jsondata = JSON.parse(session);
+        setData(jsondata);
+      }
+    } catch (error) {
+      // There was an error on the native side
+    }
+    return;
+  };
+
   const [text, setText] = useState('');
   var socket = io('ws://localhost:3008', {
     transports: ['websocket'],
     forceNew: true,
   });
   useEffect(() => {
+    console.log(data);
+    // console.log(JSON.parse(data));
+
     setMessages([
       {
         _id: 1,
@@ -35,7 +107,7 @@ export default function Login({navigation}) {
         },
       },
     ]);
-  }, []);
+  }, [data]);
   useEffect(() => {}, []);
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'black'}}>
@@ -89,6 +161,7 @@ export default function Login({navigation}) {
           />
           <TextInput
             placeholder="Username"
+            onChangeText={txt => setUsername(txt)}
             placeholderTextColor={'black'}
             style={{fontSize: 15}}
           />
@@ -114,65 +187,117 @@ export default function Login({navigation}) {
           />
           <TextInput
             placeholder="Password"
+            onChangeText={txt => setPassword(txt)}
             placeholderTextColor={'black'}
             style={{fontSize: 15}}
           />
         </View>
-        <View
-          style={{
-            marginTop: 30,
-            backgroundColor: '#FFD740',
-            width: '80%',
-            borderRadius: 30,
-            paddingVertical: 14,
-            alignItems: 'center',
-            // opacity: 0.8,
-          }}>
-          <Text style={{color: 'black', fontSize: 18, fontWeight: '700'}}>
-            Loogin
-          </Text>
-        </View>
-        <View
-          style={{
-            marginTop: 30,
-            // backgroundColor: '#F85100',
-            width: '90%',
-            borderRadius: 30,
-            // paddingVertical: 14,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-          <Text
+        <TouchableOpacity
+          onPress={() => {
+            storeUserSessionasync({username, password});
+          }}
+          activeOpacity={0.8}
+          style={{width: '80%'}}>
+          <View
             style={{
-              color: '#FFD740',
-              fontSize: 16,
-              fontWeight: '700',
+              marginTop: 30,
+              backgroundColor: '#FFD740',
+
+              borderRadius: 30,
+              paddingVertical: 14,
+              alignItems: 'center',
               // opacity: 0.8,
             }}>
-            Forgot password
+            <Text style={{color: 'black', fontSize: 18, fontWeight: '800'}}>
+              {signup ? 'Signup' : 'Login'}
+            </Text>
+          </View>
+        </TouchableOpacity>
+        {/* {checkUserName && passwordError && (
+          <Text style={{color: 'red', fontSize: 16}}>
+            {checkUserName}
+            {passwordError}
           </Text>
-          <Text
+        )} */}
+        {signup ? null : (
+          <View
             style={{
-              color: '#FFD740',
-              fontSize: 16,
-              fontWeight: '700',
-              // opacity: 0.8,
+              marginTop: 30,
+              // backgroundColor: '#F85100',
+              width: '90%',
+              borderRadius: 30,
+              // paddingVertical: 14,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
             }}>
-            Help
-          </Text>
-        </View>
-        <Text
-          style={{
-            color: 'white',
-            fontSize: 16,
-            fontWeight: '700',
-            marginTop: 60,
-            // opacity: 0.8,
-          }}>
-          Not Registered ?{' '}
-          <Text style={{color: '#FFD740'}}>Create account</Text>
-        </Text>
+            <Text
+              style={{
+                color: '#FFD740',
+                fontSize: 16,
+                fontWeight: '700',
+                // opacity: 0.8,
+              }}>
+              Forgot password
+            </Text>
+            <Text
+              style={{
+                color: '#FFD740',
+                fontSize: 16,
+                fontWeight: '700',
+                // opacity: 0.8,
+              }}>
+              Help
+            </Text>
+          </View>
+        )}
+        <TouchableOpacity activeOpacity={1} onPress={() => setSignup(!signup)}>
+          {signup ? (
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => setSignup(!signup)}>
+              <>
+                <Text
+                  style={{
+                    marginTop: 60,
+                    color: '#FFD740',
+                    fontSize: 16,
+                    fontWeight: '700',
+                  }}>
+                  Back to login
+                </Text>
+              </>
+            </TouchableOpacity>
+          ) : (
+            <>
+              <View
+                style={{
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginTop: 60,
+                  flexDirection: 'row',
+                }}>
+                <Text
+                  style={{
+                    color: 'white',
+                    fontSize: 16,
+                    fontWeight: '700',
+                  }}>
+                  Not Registered
+                </Text>
+                <Text
+                  style={{
+                    color: 'white',
+                    fontSize: 16,
+                    fontWeight: '700',
+                    color: '#FFD740',
+                  }}>
+                  {` ? Create account`}
+                </Text>
+              </View>
+            </>
+          )}
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
