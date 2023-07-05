@@ -72,19 +72,6 @@ export default function Login({navigation}) {
       // There was an error on the native side
     }
   };
-  const retrieveUserSession = async () => {
-    try {
-      const session = await EncryptedStorage.getItem('user_session');
-
-      if (session !== undefined) {
-        const jsondata = JSON.parse(session);
-        setData(jsondata);
-      }
-    } catch (error) {
-      // There was an error on the native side
-    }
-    return;
-  };
 
   const [text, setText] = useState('');
   var socket = io('ws://localhost:3008', {
