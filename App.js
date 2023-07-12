@@ -5,6 +5,7 @@ import {View, Text, ActivityIndicator} from 'react-native';
 import Navigator from './src/navigation';
 import {io} from 'socket.io-client';
 import EncryptedStorage from 'react-native-encrypted-storage';
+import HomePage from './src/screens/Home2';
 
 var socket = io('ws://localhost:3008', {
   transports: ['websocket'],
@@ -17,7 +18,7 @@ const App = () => {
       const session = await EncryptedStorage.getItem('user_session');
       if (session) {
         const jsondata = JSON.parse(session);
-        console.log(jsondata, 'USER SESSION');
+        // console.log(jsondata, 'USER SESSION');
         setAuth(jsondata);
       } else {
         setAuth(null);
@@ -39,7 +40,8 @@ const App = () => {
     return <ActivityIndicator color={'red'} size={'large'}></ActivityIndicator>;
   return (
     <Provider store={store}>
-      <Navigator auth={auth}></Navigator>
+      <HomePage />
+      {/* <Navigator auth={auth}></Navigator> */}
     </Provider>
   );
 };
